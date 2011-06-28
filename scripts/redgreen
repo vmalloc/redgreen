@@ -1,0 +1,49 @@
+#! /usr/bin/python
+#! /usr/bin/python
+from __future__ import print_function
+import subprocess
+import argparse
+import sys
+from redgreen import DirectoryChangeIterator
+
+parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
+parser.add_argument("--sleep", default=1, type=int)
+parser.add_argument("-v", "--verbose", action="store_true", default=False)
+parser.add_argument("-e", "--exclude-dir", dest="exclude_dirs", action="append", default=[])
+parser.add_argument("-d", "--run-in-dir", dest="run_in_dir", default=None, help="Specifies a directory in which to run nose (defaults to the monitored directory)")
+parser.add_argument("-m", "--monitor-dir", dest="monitored_dir", default=".")
+parser.add_argument("-t", "--testing-utility", default="nosetests")
+parser.add_argument("remainder", nargs="*", default=None)
+
+def main(args):
+    watcher = DirectoryChangeIterator(args.monitored_dir,
+                                      sleep=args.sleep,
+                                      exclude_dirs=args.exclude_dirs)
+    for change in watcher:
+        _run_nosetests(args)
+    return 0
+
+def _run_nosetests(args):
+    command = [args.testing_utility]
+    command.extend(args.remainder)
+    cwd = args.run_in_dir
+    if cwd is None:
+        cwd = args.monitored_dir
+    p = subprocess.Popen(command, cwd=cwd)
+    p.wait()
+
+################################## Boilerplate #################################
+_VERBOSE = False
+def log(msg, *args, **kwargs):
+    if _VERBOSE:
+        if args or kwargs:
+            msg = msg.format(*args, **kwargs)
+        print(msg, file=sys.stderr)
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+    _VERBOSE = args.verbose
+    try:
+        sys.exit(main(args))
+    except KeyboardInterrupt:
+        sys.exit(-1)
