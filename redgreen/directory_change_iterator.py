@@ -32,5 +32,8 @@ class DirectoryChangeIterator(object):
                 if not filename.endswith(".py"):
                     continue
                 full_filename = os.path.abspath(os.path.join(self._root, dirname, filename))
-                returned[full_filename] = _get_file_key(full_filename)
+                try:
+                    returned[full_filename] = _get_file_key(full_filename)
+                except (OSError, IOError):
+                    continue
         return returned
