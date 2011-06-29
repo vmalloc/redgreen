@@ -13,15 +13,24 @@ parser.add_argument("-e", "--exclude-dir", dest="exclude_dirs", action="append",
 parser.add_argument("-d", "--run-in-dir", dest="run_in_dir", default=None, help="Specifies a directory in which to run nose (defaults to the monitored directory)")
 parser.add_argument("-m", "--monitor-dir", dest="monitored_dir", default=".")
 parser.add_argument("-t", "--testing-utility", default="nosetests")
+parser.add_argument("--ignore-pyc", default=False, action="store_true")
 parser.add_argument("remainder", nargs="*", default=None)
 
 def main(args):
-    watcher = DirectoryChangeIterator(args.monitored_dir,
-                                      sleep=args.sleep,
-                                      exclude_dirs=args.exclude_dirs)
+    watcher = _build_watcher(args)
     for change in watcher:
         _run_nosetests(args)
     return 0
+
+def _build_watcher(args):
+    accepted_extensions = [".py"]
+    if not args.ignore_pyc:
+        accepted_extensions.append(".pyc")
+    return DirectoryChangeIterator(
+        args.monitored_dir,
+        sleep=args.sleep,
+        accepted_extensions=accepted_extensions,
+        exclude_dirs=args.exclude_dirs)
 
 def _run_nosetests(args):
     command = [args.testing_utility]
