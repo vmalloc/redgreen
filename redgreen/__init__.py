@@ -1,2 +1,3 @@
 from .__version__ import __version__
 from .directory_change_iterator import DirectoryChangeIterator
+from .file_change_iterator import FileChangeIterator

@@ -2,9 +2,7 @@ import functools
 import time
 import os
 
-def _get_file_key(filename):
-    stat = os.stat(filename)
-    return (stat.st_mtime, stat.st_size)
+from .file_status import FileStatus
 
 def _make_suffix_predicate(suffix):
     return functools.partial(str.endswith, suffix=suffix)
@@ -32,7 +30,7 @@ class DirectoryChangeIterator(object):
         returned = {}
         for filename in self._walk_filenames():
             try:
-                returned[filename] = _get_file_key(filename)
+                returned[filename] = FileStatus(filename)
             except (OSError, IOError):
                 continue
         return returned
