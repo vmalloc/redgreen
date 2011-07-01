@@ -26,5 +26,7 @@ setup(name="redgreen",
       version=__version__,
       packages=find_packages(exclude=["tests"]),
       install_requires=_INSTALL_REQUIRES,
-      scripts=["scripts/redgreen"],
+      entry_points = dict(
+          console_scripts=["redgreen = redgreen.scripts:main"],
+      )
       )
