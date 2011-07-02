@@ -4,20 +4,22 @@ import subprocess
 import argparse
 import os
 import sys
-from redgreen import DirectoryChangeIterator, FileChangeIterator
+from .. import DirectoryChangeIterator, FileChangeIterator
 
-parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
-parser.add_argument("--sleep", default=1, type=int)
-parser.add_argument("-v", "--verbose", action="store_true", default=False)
-parser.add_argument("-e", "--exclude-dir", dest="exclude_dirs", action="append", default=[])
-parser.add_argument("-d", "--run-in-dir", dest="run_in_dir", default=None, help="Specifies a directory in which to run nose (defaults to the monitored directory)")
-parser.add_argument("-m", "--monitor-target", dest="monitored_target", default=".", help="Directory or file to monitor")
-parser.add_argument("-t", "--testing-utility", default="nosetests")
-parser.add_argument("--shell", help="Treat the '-t' argument as a shell command", default=False, action="store_true")
-parser.add_argument("--ignore-pyc", default=False, action="store_true")
-parser.add_argument("remainder", nargs="*", default=None)
+def get_parser():
+    parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
+    parser.add_argument("--sleep", default=1, type=int)
+    parser.add_argument("-v", "--verbose", action="store_true", default=False)
+    parser.add_argument("-e", "--exclude-dir", dest="exclude_dirs", action="append", default=[])
+    parser.add_argument("-d", "--run-in-dir", dest="run_in_dir", default=None, help="Specifies a directory in which to run nose (defaults to the monitored directory)")
+    parser.add_argument("-m", "--monitor-target", dest="monitored_target", default=".", help="Directory or file to monitor")
+    parser.add_argument("-t", "--testing-utility", default="nosetests")
+    parser.add_argument("--shell", help="Treat the '-t' argument as a shell command", default=False, action="store_true")
+    parser.add_argument("--ignore-pyc", default=False, action="store_true")
+    parser.add_argument("remainder", nargs="*", default=None)
+    return parser
 
-def main(args):
+def main_loop(args):
     watcher = _build_watcher(args)
     for change in watcher:
         _run_nosetests(args)
@@ -57,10 +59,11 @@ def log(msg, *args, **kwargs):
             msg = msg.format(*args, **kwargs)
         print(msg, file=sys.stderr)
 
-if __name__ == '__main__':
-    args = parser.parse_args()
+
+def main():
+    args = get_parser().parse_args()
     _VERBOSE = args.verbose
     try:
-        sys.exit(main(args))
+        sys.exit(main_loop(args))
     except KeyboardInterrupt:
         sys.exit(-1)
