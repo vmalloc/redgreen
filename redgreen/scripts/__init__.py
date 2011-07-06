@@ -16,6 +16,7 @@ def get_parser():
     parser.add_argument("-t", "--testing-utility", default="nosetests")
     parser.add_argument("--shell", help="Treat the '-t' argument as a shell command", default=False, action="store_true")
     parser.add_argument("--ignore-pyc", default=False, action="store_true")
+    parser.add_argument("-E", "--ext", "--extension", dest="accepted_extensions", action="append", default=[], help="Specifies extensions to track (like .py, etc.). Can be specified multiple times. NOTE: the default is to track .py and .pyc files. If this argument is given at least once, it replaces the default completely, so .py and .pyc should be passed again if desired.")
     parser.add_argument("remainder", nargs="*", default=None)
     return parser
 
@@ -26,9 +27,11 @@ def main_loop(args):
     return 0
 
 def _build_watcher(args):
-    accepted_extensions = [".py"]
-    if not args.ignore_pyc:
-        accepted_extensions.append(".pyc")
+    accepted_extensions = args.accepted_extensions
+    if not accepted_extensions:
+        accepted_extensions = [".py"]
+        if not args.ignore_pyc:
+            accepted_extensions.append(".pyc")
     if os.path.isdir(args.monitored_target):
         return DirectoryChangeIterator(
             args.monitored_target,
@@ -61,6 +64,7 @@ def log(msg, *args, **kwargs):
 
 
 def main():
+    global _VERBOSE
     args = get_parser().parse_args()
     _VERBOSE = args.verbose
     try:
