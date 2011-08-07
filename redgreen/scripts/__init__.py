@@ -30,7 +30,9 @@ def main_loop(args):
     return 0
 
 def _build_watch_targets(args):
-    accepted_extensions = [".py"]
+    accepted_extensions = args.accepted_extensions
+    if not accepted_extensions:
+        accepted_extensions = [".py"]
     if not args.ignore_pyc:
         accepted_extensions.append(".pyc")
     if len(args.monitored_targets) > 1 and args.monitored_targets[0] == ".":
