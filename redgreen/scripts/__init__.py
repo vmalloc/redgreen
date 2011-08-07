@@ -1,6 +1,7 @@
 #! /usr/bin/python
 from __future__ import print_function
 import subprocess
+import time
 import argparse
 import os
 import sys
@@ -21,43 +22,52 @@ def get_parser():
     return parser
 
 def main_loop(args):
-    watchers = _build_watchers(args)
-    for watcher in watchers:
-        for change in watcher:
-            _run_nosetests(args)
+    watch_targets = _build_watch_targets(args)
+    while True:
+        for watch_target in watch_targets:
+            watch_target.run_if_changed()
+            time.sleep(args.sleep)
     return 0
 
-def _build_watchers(args):
+def _build_watch_targets(args):
     accepted_extensions = [".py"]
     if not args.ignore_pyc:
         accepted_extensions.append(".pyc")
     if len(args.monitored_targets) > 1 and args.monitored_targets[0] == ".":
         # workaroud to handle the "default"
         args.monitored_targets.pop(0)
-    return [_build_watcher(args, target, accepted_extensions) for target in args.monitored_targets]
+    return [WatchTarget(args, target, accepted_extensions) for target in args.monitored_targets]
+
+class WatchTarget(object):
+    def __init__(self, args, target, accepted_extensions):
+        super(WatchTarget, self).__init__()
+        self.args = args
+        self.target = target
+        self._iterator = iter(_build_watcher(args, self.target, accepted_extensions))
+    def run_if_changed(self):
+        change = next(self._iterator)
+        if not change:
+            return
+        command = [self.args.testing_utility]
+        command.extend(self.args.remainder)
+        cwd = self.args.run_in_dir
+        if cwd is None:
+            cwd = self.target
+        if not os.path.isdir(cwd):
+            cwd = os.path.dirname(cwd)
+        p = subprocess.Popen(command, cwd=cwd, shell=self.args.shell)
+        p.wait()
 
 def _build_watcher(args, monitored_target, accepted_extensions):
     if os.path.isdir(monitored_target):
         return DirectoryChangeIterator(
             monitored_target,
-            sleep=args.sleep,
             accepted_extensions=accepted_extensions,
             exclude_dirs=args.exclude_dirs)
     return FileChangeIterator(
         monitored_target,
-        sleep=args.sleep,
         )
 
-def _run_nosetests(args):
-    command = [args.testing_utility]
-    command.extend(args.remainder)
-    cwd = args.run_in_dir
-    if cwd is None:
-        cwd = args.monitored_targets[0]
-        if not os.path.isdir(cwd):
-            cwd = os.path.dirname(cwd)
-    p = subprocess.Popen(command, cwd=cwd, shell=args.shell)
-    p.wait()
 
 ################################## Boilerplate #################################
 _VERBOSE = False

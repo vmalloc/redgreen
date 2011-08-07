@@ -8,11 +8,10 @@ def _make_suffix_predicate(suffix):
     return functools.partial(str.endswith, suffix=suffix)
 
 class DirectoryChangeIterator(object):
-    def __init__(self, root, sleep, accepted_extensions, exclude_dirs=()):
+    def __init__(self, root, accepted_extensions, exclude_dirs=()):
         super(DirectoryChangeIterator, self).__init__()
         self._state = {}
         self._root = root
-        self._sleep = sleep
         self._exclude_dirs = set(os.path.relpath(d, self._root) for d in exclude_dirs)
         self._accepted_extensions = accepted_extensions
     def __iter__(self):
@@ -25,7 +24,6 @@ class DirectoryChangeIterator(object):
             if changed:
                 yield changed
                 self._state = new_state
-            time.sleep(self._sleep)
     def _get_state(self):
         returned = {}
         for filename in self._walk_filenames():
