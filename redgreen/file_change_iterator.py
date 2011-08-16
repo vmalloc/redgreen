@@ -2,10 +2,9 @@ import time
 from .file_status import FileStatus
 
 class FileChangeIterator(object):
-    def __init__(self, filename, sleep):
+    def __init__(self, filename):
         super(FileChangeIterator, self).__init__()
         self.filename = filename
-        self.sleep = sleep
     def __iter__(self):
         last_status = None
         while True:
@@ -13,4 +12,3 @@ class FileChangeIterator(object):
             if new_status != last_status:
                 yield self.filename
             last_status = new_status
-            time.sleep(self.sleep)

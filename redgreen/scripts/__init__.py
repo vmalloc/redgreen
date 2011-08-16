@@ -57,6 +57,8 @@ class WatchTarget(object):
             cwd = self.target
         if not os.path.isdir(cwd):
             cwd = os.path.dirname(cwd)
+        if not cwd:
+            cwd = '.'
         p = subprocess.Popen(command, cwd=cwd, shell=self.args.shell)
         p.wait()
 
