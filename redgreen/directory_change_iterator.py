@@ -24,6 +24,8 @@ class DirectoryChangeIterator(object):
             if changed:
                 yield changed
                 self._state = new_state
+            else:
+                yield None
     def _get_state(self):
         returned = {}
         for filename in self._walk_filenames():

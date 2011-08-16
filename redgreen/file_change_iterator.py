@@ -11,4 +11,6 @@ class FileChangeIterator(object):
             new_status = FileStatus(self.filename)
             if new_status != last_status:
                 yield self.filename
+            else:
+                yield None
             last_status = new_status
