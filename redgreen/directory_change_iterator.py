@@ -61,3 +61,5 @@ class DirectoryChangeIterator(object):
                         to_discard.add(filename)
         for x in to_discard:
             change.discard(x)
+    def __repr__(self):
+        return "<Directory watcher: {}>".format(self._root)

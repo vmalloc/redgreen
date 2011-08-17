@@ -14,3 +14,5 @@ class FileChangeIterator(object):
             else:
                 yield None
             last_status = new_status
+    def __repr__(self):
+        return "<File watcher: {}>".format(self.filename)
