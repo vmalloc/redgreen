@@ -7,6 +7,7 @@ import os
 import sys
 import logging
 from .. import DirectoryChangeIterator, FileChangeIterator
+from ..sleeper import get_sleeper
 
 def get_parser():
     parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
@@ -24,11 +25,17 @@ def get_parser():
 def main_loop(args):
     logging.info("Gathering watch targets")
     watch_targets = _build_watch_targets(args)
-    while True:
-        for watch_target in watch_targets:
-            logging.info("Monitoring %s", watch_target)
-            watch_target.run_if_changed()
-            time.sleep(args.sleep)
+    sleeper = get_sleeper()
+    try:
+        while True:
+            for watch_target in watch_targets:
+                logging.info("Monitoring %s", watch_target)
+                if watch_target.changed():
+                    sleeper.wake()
+                    watch_target.run()
+                sleeper.sleep(args.sleep)
+    finally:
+        sleeper.wake()
     return 0
 
 def _build_watch_targets(args):
@@ -50,12 +57,14 @@ class WatchTarget(object):
         self._iterator = iter(_build_watcher(args, self.target, accepted_extensions))
     def __repr__(self):
         return repr(self.target)
-    def run_if_changed(self):
+    def changed(self):
         change = next(self._iterator)
         if not change:
             logging.info("No change.")
-            return
+            return False
         logging.info("Found change: %s elements", len(change))
+        return True
+    def run(self):
         command = [self.args.testing_utility]
         command.extend(self.args.remainder)
         cwd = self.args.run_in_dir
