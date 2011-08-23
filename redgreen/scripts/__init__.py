@@ -12,7 +12,7 @@ from ..sleeper import get_sleeper
 def get_parser():
     parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
     parser.add_argument("--sleep", default=1, type=int)
-    parser.add_argument("-v", "--verbose", action="store_true", default=False)
+    parser.add_argument("-v", "--verbose", action="append_const", const=1, dest="verbose", default=[])
     parser.add_argument("-e", "--exclude-dir", dest="exclude_dirs", action="append", default=[])
     parser.add_argument("-d", "--run-in-dir", dest="run_in_dir", default=None, help="Specifies a directory in which to run nose (defaults to the monitored directory)")
     parser.add_argument("-m", "--monitor-targets", dest="monitored_targets", default=[".",], help="Directories or files to monitor", action="append")
@@ -63,6 +63,7 @@ class WatchTarget(object):
             logging.info("No change.")
             return False
         logging.info("Found change: %s elements", len(change))
+        logging.debug("Change: %s", change)
         return True
     def run(self):
         command = [self.args.testing_utility]
@@ -106,7 +107,7 @@ def _build_watcher(args, monitored_target, accepted_extensions):
 def main():
     args = get_parser().parse_args()
     if args.verbose:
-        logging.basicConfig(level=logging.INFO, stream=sys.stderr)
+        logging.basicConfig(level=logging.INFO if len(args.verbose) == 1 else logging.DEBUG, stream=sys.stderr)
     _VERBOSE = args.verbose
     try:
         sys.exit(main_loop(args))
