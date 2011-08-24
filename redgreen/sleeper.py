@@ -11,8 +11,8 @@ def get_sleeper():
 _PROGRESS_WIDTH = 50
 _WATCHING_MESSAGE = "Watching for changes... "
 _PROGRESS_BAR = [
-    _WATCHING_MESSAGE + "".join('>' if offset == position else ' ' for offset in xrange(_PROGRESS_WIDTH - len(_WATCHING_MESSAGE)))
-    for position in xrange(_PROGRESS_WIDTH - len(_WATCHING_MESSAGE))
+    _WATCHING_MESSAGE + "".join('>' if offset == position else ' ' for offset in range(_PROGRESS_WIDTH - len(_WATCHING_MESSAGE)))
+    for position in range(_PROGRESS_WIDTH - len(_WATCHING_MESSAGE))
     ]
 _WIPE_STRING = "\b" * _PROGRESS_WIDTH
 
