@@ -1,6 +1,7 @@
 import functools
 import time
 import os
+import logging
 
 from .file_status import FileStatus
 
@@ -13,6 +14,7 @@ class DirectoryChangeIterator(object):
         self._state = {}
         self._root = root
         self._exclude_dirs = set(os.path.relpath(d, self._root) for d in exclude_dirs)
+        logging.debug("Excluding directories: %s", self._exclude_dirs)
         self._accepted_extensions = accepted_extensions
     def __iter__(self):
         while True:
@@ -36,9 +38,9 @@ class DirectoryChangeIterator(object):
         return returned
     def _walk_filenames(self):
         for dirname, dirnames, filenames in os.walk(self._root):
-            dirname = os.path.relpath(dirname, self._root)
-            if dirname in self._exclude_dirs:
-                continue
+            for index, d in reversed(list(enumerate(dirnames))):
+                if os.path.relpath(d, self._root) in self._exclude_dirs:
+                    dirnames.pop(index)
             for filename in filenames:
                 if not self._is_extension_accepted(filename):
                     continue
