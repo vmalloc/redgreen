@@ -23,7 +23,6 @@ def get_parser():
     return parser
 
 def main_loop(args):
-    logging.info("Gathering watch targets")
     watch_targets = _build_watch_targets(args)
     sleeper = get_sleeper()
     try:

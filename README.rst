@@ -5,6 +5,15 @@ Overview
 
 Usage
 -----
-The simplest case: you want to repeatedly run nosetests on a directory, with specific arguments passed to nose (everything after the "--" is passed to nose directly)::
+The simplest case: you want to repeatedly run nosetests on the current directory, with specific arguments passed to nose (everything after the "--" is passed to nose directly)::
 
-  redgreen -m <your directory> -- --with-coverage --with-growl
+  redgreen -- --with-coverage --with-growl
+
+Or you can also monitor other directories (not the current one), with the *-m* flag::
+
+  redgreen -m /dir1 -m /dir2 -- [nose-args]
+
+If you use a tool other than nosetests, you can pass the *-t* flag to specify the utility to execute::
+
+  redgreen -t pytest
+
